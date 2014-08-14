@@ -4,7 +4,7 @@
 (function(context){
 	context.m = context.m || {};
 
-	//	Pub/Sub extended properties
+	//	Pub/Sub based extended properties
 	context.m.p = function(value) {
 		var self = this,
 			subs = [],
@@ -16,7 +16,7 @@
 				for (i = 0; i < subs.length; i += 1) {
 					subs[i].func.apply(subs[i].context, [value]);
 				}
-			};
+			},
 			prop = function() {
 				if (arguments.length) {
 					value = arguments[0];
@@ -30,6 +30,14 @@
 
 		prop.toJSON = function() {
 			return value;
+		}
+
+		//	Allow push on arrays
+		prop.push = function(val) {
+			if(value.push && value.length) {
+				value.push(val);
+			}
+			prop(value);
 		}
 
 		prop.subscribe = function (func, context) {
@@ -65,9 +73,38 @@
 	//	Useful bindings
 	//	Note: Always return prop() so we can chain calls.
 
+
+	//	TODO: Add binds from: http://lhorie.github.io/mithril-blog/asymmetrical-data-bindings.html
+	
+	//	Key difference: you choose what event it binds on.
+
+	/*
+//data binding helper function
+function binds(data) {
+  return {onchange: function(e) {
+    data[e.target.name] = e.target.value;
+  }};
+};
+
+m("form", binds(ctrl.user), [
+    m("input[name=first]", {value: ctrl.user.first}),
+    m("input[name=last]", {value: ctrl.user.last}),
+    m("input[name=email]", {value: ctrl.user.email}),
+    m("button", {onclick: ctrl.submit})
+]);
+	*/
+
+
+
 	//	Bi-directional value binding
 	//	TODO: events - input, keyup, keypress, afterkeydown
 	context.m.addBinding('value', function(node, tag, prop){
+		node.value = prop();
+		node.onchange = m.withAttr("value", prop);
+		return prop();
+	});
+
+	context.m.addBinding('submit', function(node, tag, prop){
 		node.value = prop();
 		node.onchange = m.withAttr("value", prop);
 		return prop();
@@ -77,7 +114,7 @@
 	context.m.addBinding('text', function(node, tag, prop){
 		var value = prop();
         value = (value === null || value === undefined)? "": value;
-        //	Ensure we have just one text child node
+        //	Ensure we have one text child node only
         var c = node.childNodes[0];
         if(!c || c.nodeType != 1 || node.childNodes.length > 1) {
         	var txt = context.document.createElement("TEXT");
@@ -116,13 +153,5 @@
 
 		return prop();
 	});
-
-
-
-	// context.m.bind('txt', function(node, tag, prop){
-	// 	node.value = prop();
-	// 	node.onchange = m.withAttr("value", prop);
-	// 	return prop();
-	// });
 
 }(window));

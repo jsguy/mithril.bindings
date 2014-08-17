@@ -26,6 +26,7 @@ var app = {
 		this.addTodo = function(){
 			var value = model.input();
 			if(value) {
+				//	Using bindings model push for arrays
 				model.todos.push({text: model.input(), done: m.p(false)});
 				model.input("");
 			}
@@ -49,7 +50,7 @@ var app = {
 	view: function(data) {
 		var t = data.model;
 		return [
-			m("h1", "Mithril bindings test Todos - " + data.left() + " of " + t.todos().length + " remaining"),
+			m("h1", "Mithril bindings Todos - " + data.left() + " of " + t.todos().length + " remaining"),
 			m("button", { onclick: data.archive }, "Archive"),
 			m("ul", [
 				t.todos().map(function(todo, idx){

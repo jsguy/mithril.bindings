@@ -11,18 +11,18 @@
 			prevValue,
 			delay = false,
 			//  Send notifications to subscribers
-			notify = function (value) {
+			notify = function (value, prevValue) {
 				var i;
 				for (i = 0; i < subs.length; i += 1) {
-					subs[i].func.apply(subs[i].context, [value]);
+					subs[i].func.apply(subs[i].context, [value, prevValue]);
 				}
 			},
 			prop = function() {
 				if (arguments.length) {
 					value = arguments[0];
 					if (prevValue !== value) {
+						notify(value, prevValue);
 						prevValue = value;
-						notify(value);
 					}
 				}
 				return value;
@@ -40,12 +40,15 @@
 			prop(value);
 		}
 
+		//	Allow subscription for when the value changes
+		//	func gets two parameters: value and prevValue
 		prop.subscribe = function (func, context) {
 			subs.push({ func: func, context: context || self });
 			return prop;
 		};
 
-		prop.delay = function(value){
+		//	Allow property to not automatically render
+		prop.delay = function(value) {
 			delay = !!value;
 			return prop;
 		};
@@ -99,12 +102,6 @@ m("form", binds(ctrl.user), [
 	//	Bi-directional value binding
 	//	TODO: events - input, keyup, keypress, afterkeydown
 	context.m.addBinding('value', function(node, tag, prop){
-		node.value = prop();
-		node.onchange = m.withAttr("value", prop);
-		return prop();
-	});
-
-	context.m.addBinding('submit', function(node, tag, prop){
 		node.value = prop();
 		node.onchange = m.withAttr("value", prop);
 		return prop();

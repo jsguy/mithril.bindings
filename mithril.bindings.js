@@ -28,10 +28,6 @@
 				return value;
 			};
 
-		prop.toJSON = function() {
-			return value;
-		}
-
 		//	Allow push on arrays
 		prop.push = function(val) {
 			if(value.push && value.length) {
@@ -76,16 +72,17 @@
 	    return m(element, attrs, children);
 	};
 
-
-	//	Add bindings
+	//	Add bindings method
 	context.m.addBinding = function(name, func){
 		context.m.bindings = context.m.bindings || {};
 		context.m.bindings[name] = func;
 	};
 
+	//	Get the underlying value of a property
 	context.m.unwrap = function(prop) {
 		return (typeof prop == "function")? prop(): prop;
     };
+
 
     //	Bi-directional binding of value
 	context.m.addBinding("value", function(prop) {
@@ -97,9 +94,12 @@
         }
     });
 
+
 	//	Hide node
 	context.m.addBinding("hide", function(prop){
-		this.style = {display: context.m.unwrap(prop)? "none" : ""};
+		this.style = {
+			display: context.m.unwrap(prop)? "none" : ""
+		};
 	});
 
 

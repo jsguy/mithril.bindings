@@ -55,7 +55,7 @@
 
 		//	Automatically update when a value changes
 		//	As mithril waits for a request animation frame, this should be ok.
-		//	You can use .delay(true) to be able to amnually handle updates
+		//	You can use .delay(true) to be able to manually handle updates
 		prop.subscribe(function(val){
 			if(!delay) {
 				m.startComputation();
@@ -67,88 +67,48 @@
 		return prop;
 	};
 
+	context.m.e = function(element, attrs, children) {
+	    for (var attrName in attrs) {
+	        if (m.bindings[attrName]) {
+	        	m.bindings[attrName].apply(attrs, [attrs[attrName]]);
+	        }
+	    }
+	    return m(element, attrs, children);
+	};
+
+
 	//	Add bindings
 	context.m.addBinding = function(name, func){
 		context.m.bindings = context.m.bindings || {};
-		context.m.bindings[name] = func;		
+		context.m.bindings[name] = func;
 	};
 
-	//	Useful bindings
-	//	Note: Always return prop() so we can chain calls.
+	context.m.unwrap = function(prop) {
+		return (typeof prop == "function")? prop(): prop;
+    };
 
-
-	//	TODO: Add binds from: http://lhorie.github.io/mithril-blog/asymmetrical-data-bindings.html
-	
-	//	Key difference: you choose what event it binds on.
-
-	/*
-//data binding helper function
-function binds(data) {
-  return {onchange: function(e) {
-    data[e.target.name] = e.target.value;
-  }};
-};
-
-m("form", binds(ctrl.user), [
-    m("input[name=first]", {value: ctrl.user.first}),
-    m("input[name=last]", {value: ctrl.user.last}),
-    m("input[name=email]", {value: ctrl.user.email}),
-    m("button", {onclick: ctrl.submit})
-]);
-	*/
-
-
-
-	//	Bi-directional value binding
-	//	TODO: events - input, keyup, keypress, afterkeydown
-	context.m.addBinding('value', function(node, tag, prop){
-		node.value = prop();
-		node.onchange = m.withAttr("value", prop);
-		return prop();
-	});
-
-	//	Set the text of a node
-	context.m.addBinding('text', function(node, tag, prop){
-		var value = prop();
-        value = (value === null || value === undefined)? "": value;
-        //	Ensure we have one text child node only
-        var c = node.childNodes[0];
-        if(!c || c.nodeType != 1 || node.childNodes.length > 1) {
-        	var txt = context.document.createElement("TEXT");
-        	//	Remove all child nodes
-			while (node.firstChild) {
-			    node.removeChild(node.firstChild);
-			}
-			node.appendChild(txt);
-        	c = txt;
+    //	Bi-directional binding of value
+	context.m.addBinding("value", function(prop) {
+        if (typeof prop == "function") {
+            this.value = prop();
+            this.onchange = m.withAttr("value", prop);
+        } else {
+        	this.value = prop;
         }
-        c.innerHTML = value;
-		return prop();
-	});
-
+    });
 
 	//	Hide node
-	context.m.addBinding('hide', function(node, tag, prop){
-		var value = prop(),
-        	isVisible = node.style.display !== "none";
-        if (!value && !isVisible) {
-            node.style.display = "";
-        } else if ((value) && isVisible) {
-            node.style.display = "none";
-		}
-
-		return prop();
+	context.m.addBinding("hide", function(prop){
+		this.style = {display: context.m.unwrap(prop)? "none" : ""};
 	});
 
 
 	//	Toggle boolean value on click
-	context.m.addBinding('toggle', function(node, tag, prop){
-		node.onclick = function(){
+	context.m.addBinding('toggle', function(prop){
+		this.onclick = function(){
 			var value = prop();
 			prop(!value);
 		}
-
-		return prop();
 	});
 
 }(window));

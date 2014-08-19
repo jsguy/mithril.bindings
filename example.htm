@@ -23,11 +23,11 @@ var app = {
 	view: function(data) {
 		var u = data.user;
 		return [
-			m("h1", { text: u.name }),
-			m("button", { type: "button", toggle: u.hide }, "Toggle hide"),
-			m("div", { hide: u.hide }, [
-				m("input", { name: "name", value: u.name }),
-				m("div", "Model name value: " + u.name())
+			m.e("h1", { text: u.name }),
+			m.e("button", { type: "button", toggle: u.hide }, "Toggle hide"),
+			m.e("div", { hide: u.hide }, [
+				m.e("input", { name: "name", value: u.name }),
+				m.e("div", "Model name value: " + u.name())
 			])
 		];
 	}

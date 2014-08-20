@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>Mithril.bindings by jsguy</title>
+  </head>
+
+  <body>
+    <div id="container">
+      <div class="inner">
+
+        <header>
+          <h1>Mithril.bindings</h1>
+          <h2>Two way automatic bindings for mithril</h2>
+        </header>
+
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/jsguy/mithril.bindings/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/jsguy/mithril.bindings/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/jsguy/mithril.bindings" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
+
+        <hr>
+
+        <section id="main_content">
+          <h1>
+<a name="mithrilbindings" class="anchor" href="#mithrilbindings"><span class="octicon octicon-link"></span></a>mithril.bindings</h1>
+
+<p>These bindings differ from the normal mithril bindings in so far as the value binding is bi-directional by default, so if you change the value the model, it will automatically update the bound field, and we have a more rich properties model.</p>
+
+<pre><code>var app = {
+    model: function(name) {
+        this.name = m.p(name);
+    },
+    view: function(c) {
+        return [
+            m.e("input", { name: "name", value: c.model.name }),
+            m.e("div", "Hello " + c.model.name()),
+            m.e("button", { onclick: c.setName }, "Set name via model")
+        ];
+    },
+    controller: function() {
+        var self = this;
+        self.model = new app.model("world");
+        self.setName = function() {
+            self.model.name("Dave");
+        }
+    }
+};
+</code></pre>
+
+<h2>
+<a name="elements" class="anchor" href="#elements"><span class="octicon octicon-link"></span></a>Elements</h2>
+
+<p>We have had to add a new elements creation mechanism, as the Mithril core is not flexible enough to be able to override the standard way it creates elements, (which is required to create seamless bi-directional binding), so we use:</p>
+
+<pre><code>`m.e(...)`
+</code></pre>
+
+<p>instead of:</p>
+
+<pre><code>`m(...)`
+</code></pre>
+
+<p>The usage signature is identical to Mithril's</p>
+
+<h2>
+<a name="properties" class="anchor" href="#properties"><span class="octicon octicon-link"></span></a>Properties</h2>
+
+<p>We have added a new property creation mechanism, so we use:</p>
+
+<pre><code>`m.p(...)`
+</code></pre>
+
+<p>instead of:</p>
+
+<pre><code>`m.prop(...)`
+</code></pre>
+
+<p>The usage signature is identical to the original Mithril <code>prop</code> model, with the additional functionality:</p>
+
+<h3>
+<a name="subscribe" class="anchor" href="#subscribe"><span class="octicon octicon-link"></span></a>Subscribe</h3>
+
+<pre><code>`m.p(...).subscribe(function)`
+</code></pre>
+
+<p>This will execute <code>function</code> each time the value of the property changes (works with basic values)</p>
+
+<h3>
+<a name="delay" class="anchor" href="#delay"><span class="octicon octicon-link"></span></a>Delay</h3>
+
+<pre><code>`m.p(...).delay(bool)`
+</code></pre>
+
+<p>This will delay automatic rendering, so that you can manually trigger it using <code>m.startCmputation</code> and <code>m.endComputation</code>.</p>
+
+<h3>
+<a name="push-on-arrays" class="anchor" href="#push-on-arrays"><span class="octicon octicon-link"></span></a>Push on arrays</h3>
+
+<pre><code>`m.p(...).push(value)`
+</code></pre>
+
+<p>If the underlying property value is an array, you can push values to it.</p>
+
+<h2>
+<a name="getting-started" class="anchor" href="#getting-started"><span class="octicon octicon-link"></span></a>Getting started</h2>
+
+<p>Simply include <code>mithril.js</code> and then <code>mithril.bindings.js</code> afterwards</p>
+
+<pre><code>&lt;script src="mithril.js"&gt;
+&lt;script src="mithril.bindings.js"&gt;
+</code></pre>
+
+<h2>
+<a name="examples" class="anchor" href="#examples"><span class="octicon octicon-link"></span></a>Examples</h2>
+
+<p>With these bindings you can do things like:</p>
+
+<p>Two-way binding by default:</p>
+
+<pre><code>m.e("input", { name: "name", value: u.name })
+</code></pre>
+
+<p>Toggle a boolean attribute on click:</p>
+
+<pre><code>m.e("button", { type: "button", toggle: u.hide }, "Toggle hide")
+</code></pre>
+
+<p>Hide an element easily (without manually settings the style attribute):</p>
+
+<pre><code>m.e("div", { hide: u.hide })
+</code></pre>
+
+<p>See the /examples directory for more examples!</p>
+        </section>
+
+        <footer>
+          Mithril.bindings is maintained by <a href="https://github.com/jsguy">jsguy</a><br>
+          This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
+
+        
+      </div>
+    </div>
+  </body>
+</html>

@@ -55,9 +55,9 @@ This will execute `function` each time the value of the property changes (works 
 
 ### Delay
 
-    `m.p(...).delay(bool)`
+    `m.p(...).delay(true)`
 
-This will delay automatic rendering, so that you can manually trigger it using `m.startCmputation` and `m.endComputation`.
+This will delay automatic rendering, so that you can manually trigger it using `m.startComputation` and `m.endComputation`.
 
 ### Push on arrays
 
@@ -76,7 +76,7 @@ Simply include `mithril.js` and then `mithril.bindings.js` afterwards
 
 ## Examples
 
-With these bindings you can do things like:
+With the included bindings you can do things like:
 
 Two-way binding by default:
 
@@ -91,3 +91,19 @@ Hide an element easily (without manually settings the style attribute):
     m.e("div", { hide: u.hide })
 
 See the /examples directory for more examples!
+
+## Custom bindings
+
+You are able to add custom bindings using `m.addBinding`, for example:
+
+    //  Toggle boolean value on click
+    context.m.addBinding('toggle', function(prop){
+        this.onclick = function(){
+            var value = prop();
+            prop(!value);
+        }
+    });
+
+Each binding will have the property object passed to it, and `this` refers to the element's binding scope.
+
+This can be useful for many things, including overriding default functionality.

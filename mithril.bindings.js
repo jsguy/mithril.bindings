@@ -30,7 +30,7 @@
 
 		//	Allow push on arrays
 		prop.push = function(val) {
-			if(value.push && value.length) {
+			if(value.push && typeof value.length !== "undefined") {
 				value.push(val);
 			}
 			prop(value);

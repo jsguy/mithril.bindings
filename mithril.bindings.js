@@ -49,7 +49,7 @@
 			return prop;
 		};
 
-		//	Automatically update when a value changes
+		//	Automatically update rendering when a value changes
 		//	As mithril waits for a request animation frame, this should be ok.
 		//	You can use .delay(true) to be able to manually handle updates
 		prop.subscribe(function(val){
@@ -64,12 +64,12 @@
 	};
 
 	context.m.e = function(element, attrs, children) {
-	    for (var attrName in attrs) {
-	        if (m.bindings[attrName]) {
-	        	m.bindings[attrName].apply(attrs, [attrs[attrName]]);
-	        }
-	    }
-	    return m(element, attrs, children);
+		for (var attrName in attrs) {
+			if (m.bindings[attrName]) {
+				m.bindings[attrName].apply(attrs, [attrs[attrName]]);
+			}
+		}
+		return m(element, attrs, children);
 	};
 
 	//	Add bindings method
@@ -81,19 +81,34 @@
 	//	Get the underlying value of a property
 	context.m.unwrap = function(prop) {
 		return (typeof prop == "function")? prop(): prop;
-    };
+	};
 
-
-    //	Bi-directional binding of value
+	//	Bi-directional binding of value
 	context.m.addBinding("value", function(prop) {
-        if (typeof prop == "function") {
-            this.value = prop();
-            this.onchange = m.withAttr("value", prop);
-        } else {
-        	this.value = prop;
-        }
-    });
+		if (typeof prop == "function") {
+			this.value = prop();
+			this.onchange = m.withAttr("value", prop);
+		} else {
+			this.value = prop;
+		}
+	});
 
+	//	Add bindings for various events 
+	var events = ["Input", "Keyup", "Keypress"];
+	for(var i = 0; i < events.length; i += 1) {
+		var eve = events[i];
+		(function(name, eve){
+			//	Bi-directional binding of value
+			context.m.addBinding(name, function(prop) {
+				if (typeof prop == "function") {
+					this.value = prop();
+					this[eve] = m.withAttr("value", prop);
+				} else {
+					this.value = prop;
+				}
+			});
+		}("value" + eve, "on" + eve.toLowerCase()));
+	}
 
 	//	Hide node
 	context.m.addBinding("hide", function(prop){

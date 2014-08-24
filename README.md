@@ -22,6 +22,15 @@ These bindings differ from the normal mithril bindings in so far as the value bi
         }
     };
 
+
+## Getting started
+
+Simply include `mithril.js` and then `mithril.bindings.js` afterwards
+
+    <script src="mithril.js">
+    <script src="mithril.bindings.js">
+
+
 ## Elements
 
 We have had to add a new elements creation mechanism, as the Mithril core is not flexible enough to be able to override the standard way it creates elements, (which is required to create seamless bi-directional binding), so we use:
@@ -65,22 +74,15 @@ This will delay automatic rendering, so that you can manually trigger it using `
 
 If the underlying property value is an array, you can push values to it.
 
-
-## Getting started
-
-Simply include `mithril.js` and then `mithril.bindings.js` afterwards
-
-    <script src="mithril.js">
-    <script src="mithril.bindings.js">
-
-
-## Examples
+## Included bindings
 
 With the included bindings you can do things like:
 
-Two-way binding by default:
+Two-way value binding by default:
 
     m.e("input", { name: "name", value: u.name })
+
+Note: you can also use "valueInput", "valueKeyup", "valueKeypress"
 
 Toggle a boolean attribute on click:
 

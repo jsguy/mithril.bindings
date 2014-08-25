@@ -93,6 +93,16 @@
 		}
 	});
 
+	//	Bi-directional binding of checked property
+	context.m.addBinding("checked", function(prop) {
+		if (typeof prop == "function") {
+			this.checked = prop();
+			this.onchange = m.withAttr("checked", prop);
+		} else {
+			this.checked = prop;
+		}
+	});
+
 	//	Add bindings for various events 
 	var events = ["Input", "Keyup", "Keypress"];
 	for(var i = 0; i < events.length; i += 1) {

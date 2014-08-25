@@ -1,0 +1,52 @@
+<html>
+<head>
+	<title></title>
+	<script src="mithril.js"></script>
+	<script src="../mithril.bindings.js"></script>
+	<script src="lib/qunit.js"></script>
+	<link rel="stylesheet" type="text/css" href="lib/qunit.css">
+</head>
+<body>
+
+<div id="qunit"></div>
+<div id="qunit-fixture"></div>
+
+<div id="content"></div>
+
+<script>
+/*
+	QUnit.test( "Sugar tags render same as normal tags", function( assert ) {
+		// expect( 3 );	
+
+		// deepEqual(sugar, normal, "Sugar and normal render the same");
+		// deepEqual(sugar, lower, "Sugar and lower render the same");
+		// deepEqual(lower, normal, "Lower and normal render the same");
+	});
+
+*/
+
+var app = {
+	model: function(name) {
+		this.name = m.p(name);
+	},
+	view: function(c) {
+		return [
+			m.e("input", { name: "name", value: c.model.name }),
+			m.e("div", "Hello " + c.model.name()),
+			m.e("button", { onclick: c.setName }, "Set name via model")
+		];
+	},
+	controller: function() {
+		var self = this;
+		self.model = new app.model("world");
+		self.setName = function() {
+			self.model.name("Dave");
+		}
+	}
+};
+
+m.module(document.getElementById('content'), app);
+
+</script>
+</body>
+</html>

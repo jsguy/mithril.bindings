@@ -1,0 +1,72 @@
+<html>
+<head>
+	<title></title>
+	<script src="mithril.js"></script>
+	<style>
+		.allBoxes { font-weight: bold }
+	</style>
+</head>
+<body>
+
+<div id="content"></div>
+
+<script>
+var app = {
+	model: function() {
+		var self = this;
+		self.boxes = [m.prop(), m.prop(), m.prop()];
+		//	Using a delayed property
+		self.allBoxesObj = m.prop();
+		//	The "all boxes" checkbox
+		self.allBoxes = function() {
+			var i, isChecked = true;
+			for(i = 0; i < self.boxes.length; i += 1) {
+				if(! self.boxes[i]()) {
+					isChecked = false;
+					break;
+				}
+			}
+			self.allBoxesObj(isChecked);
+			return isChecked;
+		};
+		//	Set all checkboxes to checked
+		self.clickAll = function(){
+			var isChecked = self.allBoxesObj(!self.allBoxesObj()), i;
+			for(i = 0; i < self.boxes.length; i += 1) {
+				self.boxes[i](isChecked);
+			}
+		};
+	},
+	view: function(c) {
+		return [
+			m("div", [
+				m("div", [
+					m("input", { type: "checkbox", value: "all", id: "allBoxes", onclick: c.model.clickAll, checked: c.model.allBoxes() }),
+					m("label", { "for": "allBoxes", class: "allBoxes"}, "All boxes" )
+				]),
+				m("div", [
+					m("input", { type: "checkbox", value: "1", id: "box_1", checked: c.model.boxes[0](), onchange: m.withAttr("checked", c.model.boxes[0]) }),
+					m("label", { "for": "box_1"}, "Box one" )
+				]),
+				m("div", [
+					m("input", { type: "checkbox", value: "2", id: "box_2", checked: c.model.boxes[1](), onchange: m.withAttr("checked", c.model.boxes[1])}),
+					m("label", { "for": "box_2"}, "Box two" )
+				]),
+				m("div", [
+					m("input", { type: "checkbox", value: "3", id: "box_3", checked: c.model.boxes[2](), onchange: m.withAttr("checked", c.model.boxes[2])}),
+					m("label", { "for": "box_3"}, "Box three" )
+				])
+			])
+		];
+	},
+	controller: function() {
+		var self = this;
+		window.model = self.model = new app.model();
+	}
+};
+
+m.module(document.getElementById('content'), app);
+
+</script>
+</body>
+</html>

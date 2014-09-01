@@ -15,8 +15,11 @@
 var app = {
 	model: function() {
 		var self = this;
-		self.boxes = [m.p(), m.p(), m.p()];
-		//	Using a delayed property
+		self.boxes = [];
+		for(var i = 0; i < 3; i += 1) {
+			self.boxes.push(m.p());
+		}
+		//	Use a delayed property - no need to render
 		self.allBoxesObj = m.p().delay(true);
 		//	The "all boxes" checkbox
 		self.allBoxes = function() {
@@ -31,7 +34,7 @@ var app = {
 			return isChecked;
 		};
 		//	Set all checkboxes to checked
-		self.clickAll = function(){
+		self.clickAllBoxes = function(){
 			var isChecked = self.allBoxesObj(!self.allBoxesObj()), i;
 			for(i = 0; i < self.boxes.length; i += 1) {
 				self.boxes[i](isChecked);
@@ -42,32 +45,20 @@ var app = {
 		return [
 			m.e("div", [
 				m.e("div", [
-					m.e("input", { type: "checkbox", value: "all", id: "allBoxes", onclick: c.model.clickAll, checked: c.model.allBoxes }),
+					m.e("input", { type: "checkbox", value: "all", id: "allBoxes", onclick: c.model.clickAllBoxes, checked: c.model.allBoxes }),
 					m.e("label", { "for": "allBoxes", class: "allBoxes"}, "All boxes" )
 				]),
-				m.e("div", [
-					m.e("input", { 
-						type: "checkbox", 
-						value: "1", 
-						id: "box_1", 
-						checked: c.model.boxes[0]}
-					),
-					m.e("label", { "for": "box_1"}, "Box one" )
-				]),
-				m.e("div", [
-					m.e("input", { type: "checkbox", value: "2", id: "box_2", checked: c.model.boxes[1]}),
-					m.e("label", { "for": "box_2"}, "Box two" )
-				]),
-				m.e("div", [
-					m.e("input", { type: "checkbox", value: "3", id: "box_3", checked: c.model.boxes[2]}),
-					m.e("label", { "for": "box_3"}, "Box three" )
-				])
+				c.model.boxes.map(function(box, idx){
+					return m.e("div", [
+						m.e("input", { type: "checkbox", value: idx, id: "b" + idx, checked: box }),
+						m.e("label", { "for": "b" + idx}, "Box " + (idx + 1) )
+					]);
+				})
 			])
 		];
 	},
 	controller: function() {
-		var self = this;
-		window.model = self.model = new app.model();
+		this.model = new app.model();
 	}
 };
 

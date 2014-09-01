@@ -14,8 +14,11 @@
 var app = {
 	model: function() {
 		var self = this;
-		self.boxes = [m.prop(), m.prop(), m.prop()];
-		//	Using a standard property
+		self.boxes = [];
+		for(var i = 0; i < 3; i += 1) {
+			self.boxes.push(m.prop());
+		}
+		//	All boxes object
 		self.allBoxesObj = m.prop();
 		//	The "all boxes" checkbox
 		self.allBoxes = function() {
@@ -30,7 +33,7 @@ var app = {
 			return isChecked;
 		};
 		//	Set all checkboxes to checked
-		self.clickAll = function(){
+		self.clickAllBoxes = function(){
 			var isChecked = self.allBoxesObj(!self.allBoxesObj()), i;
 			for(i = 0; i < self.boxes.length; i += 1) {
 				self.boxes[i](isChecked);
@@ -41,29 +44,20 @@ var app = {
 		return [
 			m("div", [
 				m("div", [
-					m("input", { type: "checkbox", value: "all", id: "allBoxes", onclick: c.model.clickAll, checked: c.model.allBoxes() }),
+					m("input", { type: "checkbox", value: "all", id: "allBoxes", onclick: c.model.clickAllBoxes, checked: c.model.allBoxes() }),
 					m("label", { "for": "allBoxes", class: "allBoxes"}, "All boxes" )
 				]),
-				m("div", [
-					m("input", { 
-						type: "checkbox", 
-						value: "1", 
-						id: "box_1", 
-						checked: c.model.boxes[0](), 
-						onchange: m.withAttr("checked", c.model.boxes[0]) }
-					),
-					m("label", { "for": "box_1"}, "Box one" )
-				]),
-				m("div", [
-					m("input", { type: "checkbox", value: "2", id: "box_2", checked: c.model.boxes[1](), onchange: m.withAttr("checked", c.model.boxes[1])}),
-					m("label", { "for": "box_2"}, "Box two" )
-				]),
-				m("div", [
-					m("input", { type: "checkbox", value: "3", id: "box_3", checked: c.model.boxes[2](), onchange: m.withAttr("checked", c.model.boxes[2])}),
-					m("label", { "for": "box_3"}, "Box three" )
-				])
+				c.model.boxes.map(function(box, idx){
+					return m("div", [
+						m("input", { type: "checkbox", value: idx, id: "b" + idx, checked: box(), onchange: m.withAttr("checked", box) }),
+						m("label", { "for": "b" + idx}, "Box " + (idx + 1) )
+					]);
+				})
 			])
 		];
+
+
+
 	},
 	controller: function() {
 		var self = this;

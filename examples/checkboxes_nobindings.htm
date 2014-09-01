@@ -15,7 +15,7 @@ var app = {
 	model: function() {
 		var self = this;
 		self.boxes = [m.prop(), m.prop(), m.prop()];
-		//	Using a delayed property
+		//	Using a standard property
 		self.allBoxesObj = m.prop();
 		//	The "all boxes" checkbox
 		self.allBoxes = function() {
@@ -45,7 +45,13 @@ var app = {
 					m("label", { "for": "allBoxes", class: "allBoxes"}, "All boxes" )
 				]),
 				m("div", [
-					m("input", { type: "checkbox", value: "1", id: "box_1", checked: c.model.boxes[0](), onchange: m.withAttr("checked", c.model.boxes[0]) }),
+					m("input", { 
+						type: "checkbox", 
+						value: "1", 
+						id: "box_1", 
+						checked: c.model.boxes[0](), 
+						onchange: m.withAttr("checked", c.model.boxes[0]) }
+					),
 					m("label", { "for": "box_1"}, "Box one" )
 				]),
 				m("div", [

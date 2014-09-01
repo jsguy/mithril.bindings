@@ -1,10 +1,11 @@
 Mithril = m = new function app(window, undefined) {
 	var type = {}.toString
 	var parser = /(?:(^|#|\.)([^#\.\[\]]+))|(\[.+?\])/g, attrParser = /\[(.+?)(?:=("|'|)(.*?)\2)?\]/
-	
+	var voidElements = /AREA|BASE|BR|COL|COMMAND|EMBED|HR|IMG|INPUT|KEYGEN|LINK|META|PARAM|SOURCE|TR‌​ACK|WBR/
+
 	function m() {
 		var args = arguments
-		var hasAttrs = args[1] !== undefined && type.call(args[1]) == "[object Object]" && !("tag" in args[1]) && !("subtree" in args[1])
+		var hasAttrs = args[1] != null && type.call(args[1]) == "[object Object]" && !("tag" in args[1]) && !("subtree" in args[1])
 		var attrs = hasAttrs ? args[1] : {}
 		var classAttrName = "class" in attrs ? "class" : "className"
 		var cell = {tag: "div", attrs: {}}
@@ -19,9 +20,9 @@ Mithril = m = new function app(window, undefined) {
 			}
 		}
 		if (classes.length > 0) cell.attrs[classAttrName] = classes.join(" ")
-		
+
 		cell.children = hasAttrs ? args[2] : args[1]
-		
+
 		for (var attrName in attrs) {
 			if (attrName == classAttrName) cell.attrs[attrName] = (cell.attrs[attrName] || "") + " " + attrs[attrName]
 			else cell.attrs[attrName] = attrs[attrName]
@@ -30,6 +31,16 @@ Mithril = m = new function app(window, undefined) {
 	}
 	function build(parentElement, parentTag, parentCache, parentIndex, data, cached, shouldReattach, index, editable, namespace, configs) {
 		//`build` is a recursive function that manages creation/diffing/removal of DOM elements based on comparison between `data` and `cached`
+		//the diff algorithm can be summarized as this:
+		//1 - compare `data` and `cached`
+		//2 - if they are different, copy `data` to `cached` and update the DOM based on what the difference is
+		//3 - recursively apply this algorithm for every array and for the children of every virtual element
+		
+		//the `cached` data structure is essentially the same as the previous redraw's `data` data structure, with a few additions:
+		//- `cached` always has a property called `nodes`, which is a list of DOM elements that correspond to the data represented by the respective virtual element
+		//- in order to support attaching `nodes` as a property of `cached`, `cached` is *always* a non-primitive object, i.e. if the data was a string, then cached is a String instance. If data was `null` or `undefined`, cached is `new String("")`
+		//- `cached also has a `configContext` property, which is the state storage object exposed by config(element, isInitialized, context)
+		//- when `cached` is an Object, it represents a virtual element; when it's an Array, it represents a list of elements; when it's a String, Number or Boolean, it represents a text node
 
 		//`parentElement` is a DOM element used for W3C DOM API calls
 		//`parentTag` is only used for handling a corner case for textarea values
@@ -40,16 +51,16 @@ Mithril = m = new function app(window, undefined) {
 		//`editable` is a flag that indicates whether an ancestor is contenteditable
 		//`namespace` indicates the closest HTML namespace as it cascades down from an ancestor
 		//`configs` is a list of config functions to run after the topmost `build` call finishes running
-		
+
 		//there's logic that relies on the assumption that null and undefined data are equivalent to empty strings
 		//- this prevents lifecycle surprises from procedural helpers that mix implicit and explicit return statements
 		//- it simplifies diffing code
-		if (data === undefined || data === null) data = ""
+		if (data == null) data = ""
 		if (data.subtree === "retain") return cached
 
 		var cachedType = type.call(cached), dataType = type.call(data)
-		if (cached === undefined || cached === null || cachedType != dataType) {
-			if (cached !== null && cached !== undefined) {
+		if (cached == null || cachedType != dataType) {
+			if (cached != null) {
 				if (parentCache && parentCache.nodes) {
 					var offset = index - parentIndex
 					var end = offset + (dataType == "[object Array]" ? data : cached.nodes).length
@@ -64,8 +75,8 @@ Mithril = m = new function app(window, undefined) {
 		if (dataType == "[object Array]") {
 			data = flatten(data)
 			var nodes = [], intact = cached.length === data.length, subArrayCount = 0
-			
-			//key algorithm: sort elements without recreating them if keys are present
+
+			//keys algorithm: sort elements without recreating them if keys are present
 			//1) create a map of all existing keys, and mark all for deletion
 			//2) add new keys to map and mark them for addition
 			//3) if key exists in new list, change action from deletion to a move
@@ -74,7 +85,7 @@ Mithril = m = new function app(window, undefined) {
 			var DELETION = 1, INSERTION = 2 , MOVE = 3
 			var existing = {}, unkeyed = [], shouldMaintainIdentities = false
 			for (var i = 0; i < cached.length; i++) {
-				if (cached[i] && cached[i].attrs && cached[i].attrs.key !== undefined) {
+				if (cached[i] && cached[i].attrs && cached[i].attrs.key != null) {
 					shouldMaintainIdentities = true
 					existing[cached[i].attrs.key] = {action: DELETION, index: i}
 				}
@@ -82,7 +93,7 @@ Mithril = m = new function app(window, undefined) {
 			if (shouldMaintainIdentities) {
 				for (var i = 0; i < data.length; i++) {
 					if (data[i] && data[i].attrs) {
-						if (data[i].attrs.key !== undefined) {
+						if (data[i].attrs.key != null) {
 							var key = data[i].attrs.key
 							if (!existing[key]) existing[key] = {action: INSERTION, index: i}
 							else existing[key] = {action: MOVE, index: i, from: existing[key].index, element: parentElement.childNodes[existing[key].index]}
@@ -93,7 +104,7 @@ Mithril = m = new function app(window, undefined) {
 				var actions = Object.keys(existing).map(function(key) {return existing[key]})
 				var changes = actions.sort(function(a, b) {return a.action - b.action || a.index - b.index})
 				var newCached = cached.slice()
-				
+
 				for (var i = 0, change; change = changes[i]; i++) {
 					if (change.action == DELETION) {
 						clear(cached[change.index].nodes, cached[change.index])
@@ -105,7 +116,7 @@ Mithril = m = new function app(window, undefined) {
 						parentElement.insertBefore(dummy, parentElement.childNodes[change.index])
 						newCached.splice(change.index, 0, {attrs: {key: data[change.index].attrs.key}, nodes: [dummy]})
 					}
-					
+
 					if (change.action == MOVE) {
 						if (parentElement.childNodes[change.index] !== change.element && change.element !== null) {
 							parentElement.insertBefore(change.element, parentElement.childNodes[change.index])
@@ -123,8 +134,9 @@ Mithril = m = new function app(window, undefined) {
 				for (var i = 0, child; child = parentElement.childNodes[i]; i++) cached.nodes.push(child)
 			}
 			//end key algorithm
-			
+
 			for (var i = 0, cacheCount = 0; i < data.length; i++) {
+				//diff each item in the array
 				var item = build(parentElement, parentTag, cached, index, data[i], cached[cacheCount], shouldReattach, index + subArrayCount || subArrayCount, editable, namespace, configs)
 				if (item === undefined) continue
 				if (!item.nodes.intact) intact = false
@@ -133,21 +145,26 @@ Mithril = m = new function app(window, undefined) {
 				cached[cacheCount++] = item
 			}
 			if (!intact) {
+				//diff the array itself
+				
+				//update the list of DOM nodes by collecting the nodes from each item
 				for (var i = 0; i < data.length; i++) {
-					if (cached[i] !== undefined) nodes = nodes.concat(cached[i].nodes)
+					if (cached[i] != null) nodes = nodes.concat(cached[i].nodes)
 				}
+				//remove items from the end of the array if the new array is shorter than the old one
+				//if errors ever happen here, the issue is most likely a bug in the construction of the `cached` data structure somewhere earlier in the program
 				for (var i = 0, node; node = cached.nodes[i]; i++) {
-					if (node.parentNode !== null && nodes.indexOf(node) < 0) node.parentNode.removeChild(node)
+					if (node.parentNode != null && nodes.indexOf(node) < 0) clear([node], [cached[i]])
 				}
+				//add items to the end if the new array is longer than the old one
 				for (var i = cached.nodes.length, node; node = nodes[i]; i++) {
-					if (node.parentNode === null) parentElement.appendChild(node)
+					if (node.parentNode == null) parentElement.appendChild(node)
 				}
 				if (data.length < cached.length) cached.length = data.length
 				cached.nodes = nodes
 			}
-			
 		}
-		else if (data !== undefined && dataType == "[object Object]") {
+		else if (data != null && dataType == "[object Object]") {
 			//if an element is different enough from the one in cache, recreate it
 			if (data.tag != cached.tag || Object.keys(data.attrs).join() != Object.keys(cached.attrs).join() || data.attrs.id != cached.attrs.id) {
 				clear(cached.nodes)
@@ -164,7 +181,7 @@ Mithril = m = new function app(window, undefined) {
 				cached = {
 					tag: data.tag,
 					//process children before attrs so that select.value works correctly
-					children: data.children !== undefined ? build(node, data.tag, undefined, undefined, data.children, cached.children, true, 0, data.attrs.contenteditable ? node : editable, namespace, configs) : [],
+					children: build(node, data.tag, undefined, undefined, data.children, cached.children, true, 0, data.attrs.contenteditable ? node : editable, namespace, configs),
 					attrs: setAttributes(node, data.tag, data.attrs, {}, namespace),
 					nodes: [node]
 				}
@@ -173,9 +190,9 @@ Mithril = m = new function app(window, undefined) {
 			else {
 				node = cached.nodes[0]
 				setAttributes(node, data.tag, data.attrs, cached.attrs, namespace)
-				cached.children = data.children !== undefined ? build(node, data.tag, undefined, undefined, data.children, cached.children, false, 0, data.attrs.contenteditable ? node : editable, namespace, configs) : []
+				cached.children = build(node, data.tag, undefined, undefined, data.children, cached.children, false, 0, data.attrs.contenteditable ? node : editable, namespace, configs)
 				cached.nodes.intact = true
-				if (shouldReattach === true && node !== null) parentElement.insertBefore(node, parentElement.childNodes[index] || null)
+				if (shouldReattach === true && node != null) parentElement.insertBefore(node, parentElement.childNodes[index] || null)
 			}
 			//schedule configs to be called. They are called after `build` finishes running
 			if (typeof data.attrs["config"] === "function") {
@@ -191,7 +208,7 @@ Mithril = m = new function app(window, undefined) {
 				}
 				else {
 					nodes = [window.document.createTextNode(data)]
-					parentElement.insertBefore(nodes[0], parentElement.childNodes[index] || null)
+					if (!parentElement.nodeName.match(voidElements)) parentElement.insertBefore(nodes[0], parentElement.childNodes[index] || null)
 				}
 				cached = "string number boolean".indexOf(typeof data) > -1 ? new data.constructor(data) : data
 				cached.nodes = nodes
@@ -205,6 +222,7 @@ Mithril = m = new function app(window, undefined) {
 					}
 					else {
 						//corner case: replacing the nodeValue of a text node that is a child of a textarea/contenteditable doesn't work
+						//we need to update the value property of the parent textarea or the innerHTML of the contenteditable element instead
 						if (parentTag === "textarea") parentElement.value = data
 						else if (editable) editable.innerHTML = data
 						else {
@@ -238,13 +256,13 @@ Mithril = m = new function app(window, undefined) {
 				}
 				else if (attrName === "style" && typeof dataAttr == "object") {
 					for (var rule in dataAttr) {
-						if (cachedAttr === undefined || cachedAttr[rule] !== dataAttr[rule]) node.style[rule] = dataAttr[rule]
+						if (cachedAttr == null || cachedAttr[rule] !== dataAttr[rule]) node.style[rule] = dataAttr[rule]
 					}
 					for (var rule in cachedAttr) {
 						if (!(rule in dataAttr)) node.style[rule] = ""
 					}
 				}
-				else if (namespace !== undefined) {
+				else if (namespace != null) {
 					if (attrName === "href") node.setAttributeNS("http://www.w3.org/1999/xlink", "href", dataAttr)
 					else if (attrName === "className") node.setAttribute("class", dataAttr)
 					else node.setAttribute(attrName, dataAttr)
@@ -361,17 +379,31 @@ Mithril = m = new function app(window, undefined) {
 		return value
 	}
 
-	m.prop = function(store) {
+	function _prop(store) {
 		var prop = function() {
 			if (arguments.length) store = arguments[0]
 			return store
 		}
+
 		prop.toJSON = function() {
 			return store
 		}
+
 		return prop
 	}
-	
+
+	m.prop = function (store) {
+		if ((typeof store === 'object' || typeof store === 'function') && store !== null &&
+				typeof store.then === 'function') {
+			var prop = _prop()
+			newPromisedProp(prop, store).then(prop)
+
+			return prop
+		}
+
+		return _prop(store)
+	}
+
 	var roots = [], modules = [], controllers = [], lastRedrawId = 0, computePostRedrawHook = null, prevented = false
 	m.module = function(root, module) {
 		var index = roots.indexOf(root)
@@ -392,10 +424,10 @@ Mithril = m = new function app(window, undefined) {
 			m.endComputation()
 		}
 	}
-	m.redraw = function() {
+	m.redraw = function(force) {
 		var cancel = window.cancelAnimationFrame || window.clearTimeout
 		var defer = window.requestAnimationFrame || window.setTimeout
-		if (lastRedrawId) {
+		if (lastRedrawId && force !== true) {
 			cancel(lastRedrawId)
 			lastRedrawId = defer(redraw, 0)
 		}
@@ -472,7 +504,7 @@ Mithril = m = new function app(window, undefined) {
 			if (querystring) currentRoute += (currentRoute.indexOf("?") === -1 ? "?" : "&") + querystring
 
 			var shouldReplaceHistoryEntry = (arguments.length == 3 ? arguments[2] : arguments[1]) === true
-			
+
 			if (window.history.pushState) {
 				computePostRedrawHook = function() {
 					window.history[shouldReplaceHistoryEntry ? "replaceState" : "pushState"](null, window.document.title, modes[m.route.mode] + currentRoute)
@@ -507,7 +539,7 @@ Mithril = m = new function app(window, undefined) {
 				path.replace(matcher, function() {
 					var keys = route.match(/:[^\/]+/g) || []
 					var values = [].slice.call(arguments, 1, -2)
-					for (var i = 0; i < keys.length; i++) routeParams[keys[i].replace(/:|\./g, "")] = decodeSpace(values[i])
+					for (var i = 0; i < keys.length; i++) routeParams[keys[i].replace(/:|\./g, "")] = decodeURIComponent(values[i])
 					m.module(root, router[route])
 				})
 				return true
@@ -549,50 +581,155 @@ Mithril = m = new function app(window, undefined) {
 		cellCache[cacheKey] = undefined
 	}
 
-	var none = {}
-	m.deferred = function() {
-		var resolvers = [], rejecters = [], resolved = none, rejected = none, promise = m.prop()
-		var object = {
-			resolve: function(value) {
-				if (resolved === none) promise(resolved = value)
-				for (var i = 0; i < resolvers.length; i++) resolvers[i](value)
-				resolvers.length = rejecters.length = 0
-			},
-			reject: function(value) {
-				if (rejected === none) rejected = value
-				for (var i = 0; i < rejecters.length; i++) rejecters[i](value)
-				resolvers.length = rejecters.length = 0
-			},
-			promise: promise
+	function newPromisedProp(prop, promise) {
+		prop.then = function () {
+			var newProp = m.prop()
+			return newPromisedProp(newProp,
+				promise.then.apply(promise, arguments).then(newProp))
 		}
-		object.promise.resolvers = resolvers
-		object.promise.then = function(success, error) {
-			var next = m.deferred()
-			if (!success) success = identity
-			if (!error) error = identity
-			function callback(method, callback) {
-				return function(value) {
-					try {
-						var result = callback(value)
-						if (result && typeof result.then == "function") result.then(next[method], error)
-						else next[method](result !== undefined ? result : value)
-					}
-					catch (e) {
-						if (type.call(e) == "[object Error]" && e.constructor !== Error) throw e
-						else next.reject(e)
-					}
-				}
-			}
-			if (resolved !== none) callback("resolve", success)(resolved)
-			else if (rejected !== none) callback("reject", error)(rejected)
-			else {
-				resolvers.push(callback("resolve", success))
-				rejecters.push(callback("reject", error))
-			}
-			return next.promise
+		prop.promise = prop
+		prop.resolve = function (val) {
+			prop(val)
+			promise = promise.resolve.apply(promise, arguments)
+			return prop
 		}
-		return object
+		prop.reject = function () {
+			promise = promise.reject.apply(promise, arguments)
+			return prop
+		}
+
+		return prop
 	}
+	m.deferred = function () {
+		return newPromisedProp(m.prop(), new Deferred())
+	}
+	// Promiz.mithril.js | Zolmeister | MIT
+	function Deferred(fn, er) {
+		// states
+		// 0: pending
+		// 1: resolving
+		// 2: rejecting
+		// 3: resolved
+		// 4: rejected
+		var self = this,
+			state = 0,
+			val = 0,
+			next = [];
+
+		self['promise'] = self
+
+		self['resolve'] = function (v) {
+			if (!state) {
+				val = v
+				state = 1
+
+				fire()
+			}
+			return this
+		}
+
+		self['reject'] = function (v) {
+			if (!state) {
+				val = v
+				state = 2
+
+				fire()
+			}
+			return this
+		}
+
+		self['then'] = function (fn, er) {
+			var d = new Deferred(fn, er)
+			if (state == 3) {
+				d.resolve(val)
+			}
+			else if (state == 4) {
+				d.reject(val)
+			}
+			else {
+				next.push(d)
+			}
+			return d
+		}
+
+		var finish = function (type) {
+			state = type || 4
+			next.map(function (p) {
+				state == 3 && p.resolve(val) || p.reject(val)
+			})
+		}
+
+		// ref : reference to 'then' function
+		// cb, ec, cn : successCallback, failureCallback, notThennableCallback
+		function thennable (ref, cb, ec, cn) {
+			if ((typeof val == 'object' || typeof val == 'function') && typeof ref == 'function') {
+				try {
+
+					// cnt protects against abuse calls from spec checker
+					var cnt = 0
+					ref.call(val, function (v) {
+						if (cnt++) return
+						val = v
+						cb()
+					}, function (v) {
+						if (cnt++) return
+						val = v
+						ec()
+					})
+				} catch (e) {
+					val = e
+					ec()
+				}
+			} else {
+				cn()
+			}
+		};
+
+		function fire() {
+
+			// check if it's a thenable
+			var ref;
+			try {
+				ref = val && val.then
+			} catch (e) {
+				val = e
+				state = 2
+				return fire()
+			}
+			thennable(ref, function () {
+				state = 1
+				fire()
+			}, function () {
+				state = 2
+				fire()
+			}, function () {
+				try {
+					if (state == 1 && typeof fn == 'function') {
+						val = fn(val)
+					}
+
+					else if (state == 2 && typeof er == 'function') {
+						val = er(val)
+						state = 1
+					}
+				} catch (e) {
+					val = e
+					return finish()
+				}
+
+				if (val == self) {
+					val = TypeError()
+					finish()
+				} else thennable(ref, function () {
+						finish(3)
+					}, finish, function () {
+						finish(state == 1 && 3)
+					})
+
+			})
+		}
+	}
+
 	m.sync = function(args) {
 		var method = "resolve"
 		function synchronizer(pos, resolved) {
@@ -616,7 +753,7 @@ Mithril = m = new function app(window, undefined) {
 			}
 		}
 		else deferred.resolve()
-		
+
 		return deferred.promise
 	}
 	function identity(value) {return value}
@@ -635,7 +772,7 @@ Mithril = m = new function app(window, undefined) {
 		}
 		if (typeof options.config == "function") {
 			var maybeXhr = options.config(xhr, options)
-			if (maybeXhr !== undefined) xhr = maybeXhr
+			if (maybeXhr != null) xhr = maybeXhr
 		}
 		xhr.send(options.method == "GET" ? "" : options.data)
 		return xhr

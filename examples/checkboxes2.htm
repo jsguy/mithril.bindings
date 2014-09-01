@@ -18,20 +18,38 @@ var app = {
 		self.boxes = [m.p(), m.p(), m.p()];
 		//	Using a delayed property
 		self.allBoxesObj = m.p().delay(true);
-		//	The "all boxes" checkbox
-		self.allBoxes = function() {
-			var i, isChecked = true;
-			for(i = 0; i < self.boxes.length; i += 1) {
-				if(! self.boxes[i]()) {
-					isChecked = false;
-					break;
+
+
+		self.allBoxesObj.subscribe(function(value){
+			console.log('abo', value);
+			if(value == true) {
+				for(i = 0; i < self.boxes.length; i += 1) {
+					self.boxes[i](value);
 				}
 			}
-			self.allBoxesObj(isChecked);
+		});
+
+
+		//	The "all boxes" checkbox
+		self.allBoxes = function(isChecked) {
+			console.log('a', isChecked);
+			if(isChecked === false) {
+				self.allBoxesObj(isChecked);
+			} else {
+				isChecked = true;
+				for(var i = 0; i < self.boxes.length; i += 1) {
+					if(! self.boxes[i]()) {
+						isChecked = false;
+						break;
+					}
+				}
+				self.allBoxesObj(isChecked);
+			}
 			return isChecked;
 		};
 		//	Set all checkboxes to checked
 		self.clickAll = function(){
+			return;
 			var isChecked = self.allBoxesObj(!self.allBoxesObj()), i;
 			for(i = 0; i < self.boxes.length; i += 1) {
 				self.boxes[i](isChecked);
@@ -42,7 +60,8 @@ var app = {
 		return [
 			m.e("div", [
 				m.e("div", [
-					m.e("input", { type: "checkbox", value: "all", id: "allBoxes", onclick: c.model.clickAll, checked: c.model.allBoxes }),
+//					m.e("input", { type: "checkbox", value: "all", id: "allBoxes", onclick: c.model.clickAll, checked: c.model.allBoxes }),
+					m.e("input", { type: "checkbox", value: "all", id: "allBoxes", checked: c.model.allBoxes }),
 					m.e("label", { "for": "allBoxes", class: "allBoxes"}, "All boxes" )
 				]),
 				m.e("div", [

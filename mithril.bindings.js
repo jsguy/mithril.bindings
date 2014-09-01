@@ -21,8 +21,9 @@
 				if (arguments.length) {
 					value = arguments[0];
 					if (prevValue !== value) {
-						notify(value, prevValue);
+						var tmpPrev = prevValue;
 						prevValue = value;
+						notify(value, tmpPrev);
 					}
 				}
 				return value;

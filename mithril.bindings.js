@@ -37,8 +37,7 @@
 			prop(value);
 		}
 
-		//	Allow subscription for when the value changes
-		//	func gets two parameters: value and prevValue
+		//	Subscribe for when the value changes
 		prop.subscribe = function (func, context) {
 			subs.push({ func: func, context: context || self });
 			return prop;
@@ -64,10 +63,12 @@
 		return prop;
 	};
 
+	//	Element function that applies out extended bindings
 	context.m.e = function(element, attrs, children) {
-		for (var attrName in attrs) {
-			if (m.bindings[attrName]) {
-				m.bindings[attrName].apply(attrs, [attrs[attrName]]);
+		for (var name in attrs) {
+			if (m.bindings[name]) {
+				m.bindings[name].apply(attrs, [attrs[name]]);
+				delete attrs[name];
 			}
 		}
 		return m(element, attrs, children);
@@ -104,7 +105,7 @@
 		}
 	});
 
-	//	Add bindings for various events 
+	//	Add value bindings for various event types 
 	var events = ["Input", "Keyup", "Keypress"];
 	for(var i = 0; i < events.length; i += 1) {
 		var eve = events[i];

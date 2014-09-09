@@ -63,21 +63,26 @@
 		return prop;
 	};
 
-	//	Element function that applies out extended bindings
+	//	Element function that applies our extended bindings
+	//	Note: certain attributes can be removed when applied
 	context.m.e = function(element, attrs, children) {
 		for (var name in attrs) {
 			if (m.bindings[name]) {
-				m.bindings[name].apply(attrs, [attrs[name]]);
-				delete attrs[name];
+				m.bindings[name].func.apply(attrs, [attrs[name]]);
+				if(m.bindings[name].removeable) {
+					delete attrs[name];
+				}
 			}
 		}
 		return m(element, attrs, children);
 	};
 
 	//	Add bindings method
-	context.m.addBinding = function(name, func){
+	//	Non-standard attributes do not need to be rendered, eg: valueInput
+	//	so they are set as removable
+	context.m.addBinding = function(name, func, removeable){
 		context.m.bindings = context.m.bindings || {};
-		context.m.bindings[name] = func;
+		context.m.bindings[name] = { func: func, removeable: removeable };
 	};
 
 	//	Get the underlying value of a property
@@ -118,7 +123,7 @@
 				} else {
 					this.value = prop;
 				}
-			});
+			}, true);
 		}("value" + eve, "on" + eve.toLowerCase()));
 	}
 
@@ -127,7 +132,7 @@
 		this.style = {
 			display: context.m.unwrap(prop)? "none" : ""
 		};
-	});
+	}, true);
 
 
 	//	Toggle boolean value on click
@@ -136,6 +141,6 @@
 			var value = prop();
 			prop(!value);
 		}
-	});
+	}, true);
 
 }(window));

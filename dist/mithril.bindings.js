@@ -132,7 +132,9 @@
 			}, true);
 		}("value" + eve, "on" + eve.toLowerCase()));
 	}
-
+}(window));;/* Set of default bindings */
+(function(context){
+	context.m = context.m || {};
 	//	Hide node
 	context.m.addBinding("hide", function(prop){
 		this.style = {
@@ -155,5 +157,4 @@
 			this.onmouseout = prop[1];
 		}
 	}, true );
-
 }(window));

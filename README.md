@@ -8,9 +8,9 @@ These bindings differ from the normal mithril bindings in so far as the value bi
         },
         view: function(c) {
             return [
-                m.e("input", { name: "name", value: c.model.name }),
-                m.e("div", "Hello " + c.model.name()),
-                m.e("button", { onclick: c.setName }, "Set name via model")
+                m("input", { name: "name", value: c.model.name }),
+                m("div", "Hello " + c.model.name()),
+                m("button", { onclick: c.setName }, "Set name via model")
             ];
         },
         controller: function() {
@@ -35,7 +35,7 @@ Simply include `mithril.js` and then `mithril.bindings.js` afterwards
 
 We have had to add a new elements creation mechanism, as the Mithril core is not flexible enough to be able to override the standard way it creates elements, (which is required to create seamless bi-directional binding), so we use:
 
-    `m.e(...)`
+    `m(...)`
 
 instead of:
 
@@ -80,17 +80,17 @@ With the included bindings you can do things like:
 
 Two-way value binding by default:
 
-    m.e("input", { name: "name", value: u.name })
+    m("input", { name: "name", value: u.name })
 
 Note: you can also use "valueInput", "valueKeyup", "valueKeypress"
 
 Toggle a boolean attribute on click:
 
-    m.e("button", { type: "button", toggle: u.hide }, "Toggle hide")
+    m("button", { type: "button", toggle: u.hide }, "Toggle hide")
 
 Hide an element easily (without manually settings the style attribute):
 
-    m.e("div", { hide: u.hide })
+    m("div", { hide: u.hide })
 
 See the /examples directory for more examples!
 

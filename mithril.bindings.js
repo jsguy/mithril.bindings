@@ -64,8 +64,11 @@
 	};
 
 	//	Element function that applies our extended bindings
-	//	Note: certain attributes can be removed when applied
+	//	Note: 
+	//		. Some attributes can be removed when applied, eg: custom attributes
+	//	
 	context.m.e = function(element, attrs, children) {
+		var merged = []
 		for (var name in attrs) {
 			if (m.bindings[name]) {
 				m.bindings[name].func.apply(attrs, [attrs[name]]);
@@ -82,7 +85,10 @@
 	//	so they are set as removable
 	context.m.addBinding = function(name, func, removeable){
 		context.m.bindings = context.m.bindings || {};
-		context.m.bindings[name] = { func: func, removeable: removeable };
+		context.m.bindings[name] = {
+			func: func,
+			removeable: removeable
+		};
 	};
 
 	//	Get the underlying value of a property
@@ -134,7 +140,6 @@
 		};
 	}, true);
 
-
 	//	Toggle boolean value on click
 	context.m.addBinding('toggle', function(prop){
 		this.onclick = function(){
@@ -142,5 +147,13 @@
 			prop(!value);
 		}
 	}, true);
+
+	//	Set hover states, a'la jQuery pattern
+	context.m.addBinding('hover', function(prop){
+		this.onmouseover = prop[0];
+		if(prop[1]) {
+			this.onmouseout = prop[1];
+		}
+	}, true );
 
 }(window));

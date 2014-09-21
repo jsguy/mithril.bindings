@@ -1,0 +1,39 @@
+<html>
+<head>
+	<title></title>
+	<script src="mithril.js"></script>
+	<script src="../dist/mithril.bindings.js"></script>
+</head>
+<body>
+<h1>Toggle value</h1>
+
+<div id="content"></div>
+
+<script>
+var app = {
+	model: function(name) {
+		this.value = m.p(false);
+		this.value2 = m.p('moo');
+	},
+	controller: function() {
+		var self = this;
+		self.model = new app.model("world");
+	},
+	view: function(c) {
+		var o = c.model;
+		return [
+			m.e("input", { value: o.value }),
+			m.e("button", { toggle: o.value }, "Toggle boolean"),
+			m.e("hr"),
+			m.e("input", { value: o.value2 }),
+			m.e("button", { toggle: [o.value2, 'moo', 'cow', 'sheep', 'baa'] }, "Toggle enum")
+		];
+	}
+};
+</script>
+<script>
+	m.module(document.getElementById('content'), app);
+</script>
+
+</body>
+</html>

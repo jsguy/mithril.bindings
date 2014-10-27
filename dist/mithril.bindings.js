@@ -1,11 +1,11 @@
 //	Mithril bindings.
 //	Copyright (C) 2014 jsguy (Mikkel Bergmann)
 //	MIT licensed
-(function(context){
-	context.m = context.m || {};
+(function(m){
+	m.bindings = m.bindings || {};
 
 	//	Pub/Sub based extended properties
-	context.m.p = function(value) {
+	m.p = function(value) {
 		var self = this,
 			subs = [],
 			prevValue,
@@ -67,8 +67,7 @@
 	//	Note: 
 	//		. Some attributes can be removed when applied, eg: custom attributes
 	//	
-	context.m.e = function(element, attrs, children) {
-		var merged = []
+	m.e = function(element, attrs, children) {
 		for (var name in attrs) {
 			if (m.bindings[name]) {
 				m.bindings[name].func.apply(attrs, [attrs[name]]);
@@ -83,21 +82,20 @@
 	//	Add bindings method
 	//	Non-standard attributes do not need to be rendered, eg: valueInput
 	//	so they are set as removable
-	context.m.addBinding = function(name, func, removeable){
-		context.m.bindings = context.m.bindings || {};
-		context.m.bindings[name] = {
+	m.addBinding = function(name, func, removeable){
+		m.bindings[name] = {
 			func: func,
 			removeable: removeable
 		};
 	};
 
 	//	Get the underlying value of a property
-	context.m.unwrap = function(prop) {
+	m.unwrap = function(prop) {
 		return (typeof prop == "function")? prop(): prop;
 	};
 
 	//	Bi-directional binding of value
-	context.m.addBinding("value", function(prop) {
+	m.addBinding("value", function(prop) {
 		if (typeof prop == "function") {
 			this.value = prop();
 			this.onchange = m.withAttr("value", prop);
@@ -107,7 +105,7 @@
 	});
 
 	//	Bi-directional binding of checked property
-	context.m.addBinding("checked", function(prop) {
+	m.addBinding("checked", function(prop) {
 		if (typeof prop == "function") {
 			this.checked = prop();
 			this.onchange = m.withAttr("checked", prop);
@@ -122,7 +120,7 @@
 		var eve = events[i];
 		(function(name, eve){
 			//	Bi-directional binding of value
-			context.m.addBinding(name, function(prop) {
+			m.addBinding(name, function(prop) {
 				if (typeof prop == "function") {
 					this.value = prop();
 					this[eve] = m.withAttr("value", prop);
@@ -132,7 +130,7 @@
 			}, true);
 		}("value" + eve, "on" + eve.toLowerCase()));
 	}
-}(window));;(function(context){
+}(window.m || {}));;(function(context){
 	/* Set of default extended bindings */
 	context.m = context.m || {};
 
@@ -192,5 +190,23 @@
 	};
 
 	/* TODO: Add "binds" functionality as per lhorie example */
+
+
+
+
+	//	Return a function that can trigger a binding
+	//	Use might be: onclick: m.trigger('binding', prop)
+	m.trigger = function(){
+		var args = Array.prototype.slice.call(arguments);
+		return function(){
+			var name = args[0],
+				argList = args.slice(1);
+			if (m.bindings[name]) {
+				m.bindings[name].func.apply(this, argList);
+			}
+		}
+	}
+
+
 
 }(window));

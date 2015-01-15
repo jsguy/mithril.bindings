@@ -1,7 +1,8 @@
 //	Mithril bindings.
 //	Copyright (C) 2014 jsguy (Mikkel Bergmann)
 //	MIT licensed
-(function(m){
+(function(){
+var mithrilBindings = function(m){
 	m.bindings = m.bindings || {};
 
 	//	Pub/Sub based extended properties
@@ -35,7 +36,7 @@
 				value.push(val);
 			}
 			prop(value);
-		}
+		};
 
 		//	Subscribe for when the value changes
 		prop.subscribe = function (func, context) {
@@ -114,35 +115,15 @@
 		}
 	});
 
-	//	Add value bindings for various event types 
-	var events = ["Input", "Keyup", "Keypress"];
-	for(var i = 0; i < events.length; i += 1) {
-		var eve = events[i];
-		(function(name, eve){
-			//	Bi-directional binding of value
-			m.addBinding(name, function(prop) {
-				if (typeof prop == "function") {
-					this.value = prop();
-					this[eve] = m.withAttr("value", prop);
-				} else {
-					this.value = prop;
-				}
-			}, true);
-		}("value" + eve, "on" + eve.toLowerCase()));
-	}
-}(window.m || {}));;(function(context){
-	/* Set of default extended bindings */
-	context.m = context.m || {};
-
 	//	Hide node
-	context.m.addBinding("hide", function(prop){
+	m.addBinding("hide", function(prop){
 		this.style = {
-			display: context.m.unwrap(prop)? "none" : ""
+			display: m.unwrap(prop)? "none" : ""
 		};
 	}, true);
 
 	//	Toggle value(s) on click
-	context.m.addBinding('toggle', function(prop){
+	m.addBinding('toggle', function(prop){
 		this.onclick = function(){
 			//	Toggle allows an enum list to be toggled, eg: [prop, value2, value2]
 			var isFunc = typeof prop === 'function', tmp, i, vals = [], val, tVal;
@@ -168,34 +149,47 @@
 				}
 				tmp(tVal);
 			}
-		}
+		};
 	}, true);
 
 	//	Set hover states, a'la jQuery pattern
-	context.m.addBinding('hover', function(prop){
+	m.addBinding('hover', function(prop){
 		this.onmouseover = prop[0];
 		if(prop[1]) {
 			this.onmouseout = prop[1];
 		}
 	}, true );
 
-}(window));;(function(context){
-	/* Set of userful binding-like functionality */
-	context.m = context.m || {};
+	//	Add value bindings for various event types 
+	var events = ["Input", "Keyup", "Keypress"],
+		createBinding = function(name, eve){
+			//	Bi-directional binding of value
+			m.addBinding(name, function(prop) {
+				if (typeof prop == "function") {
+					this.value = prop();
+					this[eve] = m.withAttr("value", prop);
+				} else {
+					this.value = prop;
+				}
+			}, true);
+		};
 
-	context.m.set = function(prop, value){
+	for(var i = 0; i < events.length; i += 1) {
+		var eve = events[i];
+		createBinding("value" + eve, "on" + eve.toLowerCase());
+	}
+
+
+	//	Set a value on a property
+	m.set = function(prop, value){
 		return function() {
 			prop(value);
-		}
+		};
 	};
 
-	/* TODO: Add "binds" functionality as per lhorie example */
-
-
-
-
-	//	Return a function that can trigger a binding
-	//	Use might be: onclick: m.trigger('binding', prop)
+	/*	Returns a function that can trigger a binding 
+		Usage: onclick: m.trigger('binding', prop)
+	*/
 	m.trigger = function(){
 		var args = Array.prototype.slice.call(arguments);
 		return function(){
@@ -204,9 +198,20 @@
 			if (m.bindings[name]) {
 				m.bindings[name].func.apply(this, argList);
 			}
-		}
-	}
+		};
+	};
 
+	return m.bindings;
+};
 
+if (typeof module != "undefined" && module !== null && module.exports) {
+	module.exports = mithrilBindings;
+} else if (typeof define === "function" && define.amd) {
+	define(function() {
+		return mithrilBindings;
+	});
+} else {
+	mithrilBindings(typeof window != "undefined"? window.m || {}: {});
+}
 
-}(window));
+}());

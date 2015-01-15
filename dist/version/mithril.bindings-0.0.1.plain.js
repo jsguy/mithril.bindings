@@ -35,7 +35,7 @@
 				value.push(val);
 			}
 			prop(value);
-		}
+		};
 
 		//	Subscribe for when the value changes
 		prop.subscribe = function (func, context) {
@@ -115,10 +115,8 @@
 	});
 
 	//	Add value bindings for various event types 
-	var events = ["Input", "Keyup", "Keypress"];
-	for(var i = 0; i < events.length; i += 1) {
-		var eve = events[i];
-		(function(name, eve){
+	var events = ["Input", "Keyup", "Keypress"],
+		createBinding = function(name, eve){
 			//	Bi-directional binding of value
 			m.addBinding(name, function(prop) {
 				if (typeof prop == "function") {
@@ -128,6 +126,10 @@
 					this.value = prop;
 				}
 			}, true);
-		}("value" + eve, "on" + eve.toLowerCase()));
+		};
+
+	for(var i = 0; i < events.length; i += 1) {
+		var eve = events[i];
+		createBinding("value" + eve, "on" + eve.toLowerCase());
 	}
 }(window.m || {}));

@@ -1,6 +1,6 @@
 {
 	"name": "mithril.bindings",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"description": "Mithril bindings - bi-directional bindings and richer properties with subscribeability.",
 	"repository": {
 		"type": "git",
@@ -15,5 +15,6 @@
 		"grunt-contrib-watch":  "0.4.x",
 		"grunt-contrib-concat":  "0.3.x"
 	},
+	"main": "dist/mithril.bindings.js",
 	"license": "MIT"
 }

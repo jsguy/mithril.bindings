@@ -18,10 +18,20 @@ var mithrilBindings = function(m){
 					subs[i].func.apply(subs[i].context, [value, prevValue]);
 				}
 			},
+			//	Really basic value checker
+			//	Assumes value changed, if not string, number or boolean
+			isEqual = function(v1, v2){
+				if(typeof v1 === "string" || typeof v1 === "number" || typeof v === "boolean") {
+					//	Allow coercion
+					return v1 == v2;
+				} else {
+					return false;
+				}
+			},
 			prop = function() {
 				if (arguments.length) {
 					value = arguments[0];
-					if (prevValue !== value) {
+					if (!isEqual(prevValue, value)) {
 						var tmpPrev = prevValue;
 						prevValue = value;
 						notify(value, tmpPrev);

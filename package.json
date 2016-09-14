@@ -1,6 +1,6 @@
 {
 	"name": "mithril.bindings",
-	"version": "0.0.3",
+	"version": "0.0.4",
 	"description": "Mithril bindings - bi-directional bindings and richer properties with subscribeability.",
 	"repository": {
 		"type": "git",

@@ -1,5 +1,5 @@
 //	Mithril bindings.
-//	Copyright (C) 2014 jsguy (Mikkel Bergmann)
+//	Copyright (C) 2016 jsguy (Mikkel Bergmann)
 //	MIT licensed
 (function(){
 var mithrilBindings = function(m){

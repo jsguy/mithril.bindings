@@ -65,8 +65,7 @@ var mithrilBindings = function(m){
 		//	You can use .delay(true) to be able to manually handle updates
 		prop.subscribe(function(val){
 			if(!delay) {
-				m.startComputation();
-				m.endComputation();
+				m.redraw();
 			}
 			return prop;
 		});
@@ -75,9 +74,9 @@ var mithrilBindings = function(m){
 	};
 
 	//	Element function that applies our extended bindings
-	//	Note: 
+	//	Note:
 	//		. Some attributes can be removed when applied, eg: custom attributes
-	//	
+	//
 	m.e = function(element, attrs, children) {
 		for (var name in attrs) {
 			if (m.bindings[name]) {
@@ -170,7 +169,7 @@ var mithrilBindings = function(m){
 		}
 	}, true );
 
-	//	Add value bindings for various event types 
+	//	Add value bindings for various event types
 	var events = ["Input", "Keyup", "Keypress"],
 		createBinding = function(name, eve){
 			//	Bi-directional binding of value
@@ -197,7 +196,7 @@ var mithrilBindings = function(m){
 		};
 	};
 
-	/*	Returns a function that can trigger a binding 
+	/*	Returns a function that can trigger a binding
 		Usage: onclick: m.trigger('binding', prop)
 	*/
 	m.trigger = function(){

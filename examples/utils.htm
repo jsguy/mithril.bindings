@@ -5,7 +5,7 @@
 	<script src="../dist/mithril.bindings.js"></script>
 </head>
 <body>
-<h1>Toggle value</h1>
+<h1>Set value</h1>
 
 <div id="content"></div>
 
@@ -14,12 +14,12 @@ var app = {
 	model: function(name) {
 		this.value = m.p('moo');
 	},
-	controller: function() {
+	oninit: function() {
 		var self = this;
 		self.model = new app.model("world");
 	},
-	view: function(c) {
-		var o = c.model;
+	view: function(data) {
+		var o = data.state.model;
 		return [
 			m.e("input", { value: o.value }),
 			m.e("button", { onclick: m.set(o.value, 'cow') }, "Setter"),
@@ -28,7 +28,7 @@ var app = {
 };
 </script>
 <script>
-	m.module(document.getElementById('content'), app);
+	m.mount(document.getElementById('content'), app);
 </script>
 
 </body>

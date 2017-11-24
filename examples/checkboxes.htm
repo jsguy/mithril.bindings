@@ -41,7 +41,8 @@ var app = {
 			}
 		};
 	},
-	view: function(c) {
+	view: function(data) {
+		var c = data.state;
 		return [
 			m.e("div", [
 				m.e("div", [
@@ -57,12 +58,12 @@ var app = {
 			])
 		];
 	},
-	controller: function() {
+	oninit: function() {
 		this.model = new app.model();
 	}
 };
 
-m.module(document.getElementById('content'), app);
+m.mount(document.getElementById('content'), app);
 
 </script>
 </body>

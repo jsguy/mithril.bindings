@@ -36,7 +36,7 @@ var app = {
 			self.todos(list);
 		};
 	},
-	controller: function() {
+	oninit: function() {
 		var model = this.model = new app.model();
 		this.addTodo = function(){
 			var value = model.input();
@@ -49,7 +49,7 @@ var app = {
 		};
 	},
 	view: function(data) {
-		var t = data.model;
+		var t = data.state.model;
 		return [
 			m.e("h1", "Mithril bindings Todos - " + t.left() + " of " + t.todos().length + " remaining"),
 			m.e("button", { onclick: t.archive }, "Archive"),
@@ -58,7 +58,7 @@ var app = {
 					return m.e("li", { class: todo.done()? "done": "", toggle: todo.done }, todo.text);
 				})
 			]),
-			m.e("form", { onsubmit: data.addTodo }, [
+			m.e("form", { onsubmit: data.state.addTodo }, [
 				m.e("input", { type: "text", value: t.input, placeholder: "Add todo"}),
 				m.e("button", { type: "submit"}, "Add")
 			])
@@ -67,7 +67,7 @@ var app = {
 };
 
 //initialize
-m.module(document.getElementById("content"), app);
+m.mount(document.getElementById("content"), app);
 </script>
 
 </body>

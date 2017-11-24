@@ -4,11 +4,11 @@ var app = {
 		this.email = m.p(email);
 		this.hide = m.p();
 	},
-	controller: function() {
+	oninit: function() {
 		window.model = this.user = new app.model("John Doe", "test@example.com");
 	},
 	view: function(data) {
-		var u = data.user;
+		var u = data.state.user;
 		return [
 			m.e("h1", { text: u.name }),
 			m.e("button", { type: "button", toggle: u.hide }, "Toggle hide"),

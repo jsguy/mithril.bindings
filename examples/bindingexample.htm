@@ -12,7 +12,7 @@
 
 <script src="bindingexample.js"></script>
 <script>
-	m.module(document.getElementById('content'), app);
+	m.mount(document.getElementById('content'), app);
 	//	Demonstrate external access to the model
 	document.getElementById('setValueButton').onclick = function(){
 		model.name("John Smith");

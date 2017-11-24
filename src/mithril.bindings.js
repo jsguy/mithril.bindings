@@ -73,22 +73,6 @@ var mithrilBindings = function(m){
 		return prop;
 	};
 
-	//	Element function that applies our extended bindings
-	//	Note:
-	//		. Some attributes can be removed when applied, eg: custom attributes
-	//
-	m.e = function(element, attrs, children) {
-		for (var name in attrs) {
-			if (m.bindings[name]) {
-				m.bindings[name].func.apply(attrs, [attrs[name]]);
-				if(m.bindings[name].removeable) {
-					delete attrs[name];
-				}
-			}
-		}
-		return m(element, attrs, children);
-	};
-
 	//	Add bindings method
 	//	Non-standard attributes do not need to be rendered, eg: valueInput
 	//	so they are set as removable
@@ -209,6 +193,37 @@ var mithrilBindings = function(m){
 			}
 		};
 	};
+
+	//	Override m if we're in the browser
+	if(typeof window !== "undefined" && typeof window.m !== "undefined") {
+		var __oldM = window.m;
+
+		//	Element function that applies our extended bindings
+		//	Note:
+		//		. Some attributes can be removed when applied, eg: custom attributes
+		//
+    window.m = function(element, attrs, children) {
+  		for (var name in attrs) {
+  			if (window.m.bindings[name]) {
+  				window.m.bindings[name].func.apply(attrs, [attrs[name]]);
+  				if(window.m.bindings[name].removeable) {
+  					delete attrs[name];
+  				}
+  			}
+  		}
+  		return __oldM.apply(element, arguments);
+  	};
+		//	Set old attributes
+    for(var i in __oldM) {if(__oldM.hasOwnProperty(i)){
+      window.m[i] = __oldM[i];
+    }}
+
+		//	Override prop
+		window.m.prop = m.p;
+	}
+
+	//	Override prop
+	m.prop = m.p;
 
 	return m.bindings;
 };
